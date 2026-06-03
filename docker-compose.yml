@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  jupyter:
+    image: rocm/pytorch:rocm5.7_ubuntu22.04_py3.10_pytorch_2.0.1
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/workspace/notebooks
+      - ./data:/workspace/data
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0
+    command: jupyter lab --ip=0.0.0.0 --allow-root --no-browser
+
+  tensorboard:
+    image: tensorflow/tensorflow:latest-rocm
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./logs:/logs
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    command: tensorboard --logdir=/logs --host=0.0.0.0
+
+  vscode:
+    image: linuxserver/code-server:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./workspace:/workspace
+    environment:
+      - PASSWORD=rocm2026
